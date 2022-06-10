@@ -41,7 +41,7 @@ def open_table():
         label4['foreground'] = 'green'
         wb = openpyxl.load_workbook(path_table)
         sheet = wb.get_sheet_by_name('Доверенность')
-        e_end.insert(0, sheet['M'][-1])
+        e_end.insert(0, sheet['M'][-1].coordinate)
         wb.close()
 
 
@@ -70,8 +70,8 @@ def get_dict():
                 # print(f'Длина для {cellObj.value}: {len(cellObj.value)}')
 
         info('Обработка входных данных', "Данные из таблицы успешно загружены!\nПереходим к "
-                                    "обработке шаблона.\n"
-                                    f"Было обработано строк: {rows}")
+                                         "обработке шаблона.\n"
+                                         f"Было обработано строк: {rows}")
         wb.close()
         return test
     except ValueError:
@@ -86,7 +86,9 @@ def start(test):
     x = 0
     files = 0
 
-    path = Path('Доверенности')
+    user_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents')
+    path = Path(user_path + '/Доверенности')
+
     if not path.exists():
         os.mkdir(path)
 
@@ -97,10 +99,10 @@ def start(test):
                        'seria': test[x + 6], 'num': test[x + 7], 'date': test[x + 8], 'passport_from_1': test[x + 9],
                        'job_of_director': test[x + 10], 'name_of_director': test[x + 11]}
             doc.render(context)
-            path_dirs = Path(f'Доверенности/{test[x]}')
+            path_dirs = Path(f'{path}/{test[x]}')
             if not path_dirs.exists():
                 os.mkdir(path_dirs)
-            doc.save(f'Доверенности/{test[x]}/Доверенность ' + test[x + 1] + '.docx')
+            doc.save(f'{path}/{test[x]}/Доверенность ' + test[x + 1] + '.docx')
             x += 12  # прыжок на следующую строку
             files += 1
         messagebox.showinfo(title="Обработка входных данных", message="Шаблон успешно обработан.\n"
@@ -127,12 +129,16 @@ def fill_files():
     else:
         error("Ошибка входных данных", "Введите начальную и конечную точку таблицы!")
 
+
 def open_dir():
-    path = Path('Доверенности')
+    user_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents')
+    path = Path(user_path + '/Доверенности')
+
     if path.exists():
         os.startfile(path)
     else:
         error("Открытие папки", "Каталог не существует!")
+
 
 def open_custom_fill():
     path_xlsx = ''
@@ -141,7 +147,7 @@ def open_custom_fill():
         if e_city.get() and e_fio.get() and e_director.get() and e_doc.get() and \
                 e_job.get() and e_name.get() and e_seria.get() and e_number.get() and e_date.get() and \
                 e_point_of_get.get() and e_directors_job.get() and e_directors_name.get() and \
-                e_code.get() and e_birth.get() and e_place_of_birth.get() and e_gender.get() and e_full_fio.get() and\
+                e_code.get() and e_birth.get() and e_place_of_birth.get() and e_gender.get() and e_full_fio.get() and \
                 e_inn.get() and e_snils.get() and e_mail.get():
             return True
         else:
@@ -156,9 +162,10 @@ def open_custom_fill():
         if path_xlsx != '':
             label13['foreground'] = 'green'
 
-
     def open_xlsx_sample():
-        path = Path('Шаблоны')
+        user_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents')
+        path = Path(user_path + '/Шаблоны')
+
         if path.exists():
             os.startfile(path)
         else:
@@ -183,44 +190,50 @@ def open_custom_fill():
 
         sheet_2.insert_rows(0)
         col2_names = ['№', 'Серия', 'Номер', 'Дата выдачи', 'Код', 'Дата рождения', 'Место рождения', 'Пол',
-                     'Фамилия', 'Имя', 'Отчество', 'ИНН', 'СНИЛС', 'Должность', 'Почта', 'Населенный пункт']
+                      'Фамилия', 'Имя', 'Отчество', 'ИНН', 'СНИЛС', 'Должность', 'Почта', 'Населенный пункт']
         k = 0
         for i in col2_names:
             sheet_2[f'{l[k]}1'].value = f'{col2_names[k]}'
             sheet_2.column_dimensions[l[k]].width = 20
-            # print(f"Вставил {col2_names[k]} в {l[k]}1 при k= {k}")
             k += 1
 
-        path = Path('Шаблоны')
+        user_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents')
+        path = Path(user_path+'/Шаблоны')
         if not path.exists():
             os.mkdir(path)
 
         sheet_1.auto_filter.ref = "B1:M999"
         sheet_2.auto_filter.ref = "B1:P999"
 
-        book.save("Шаблоны/Переменные.xlsx")
+        book.save(f"{path}/Переменные.xlsx")
         info("Создание таблицы", 'Таблица успешно создана!')
- # ГУ МВД РОССИИ ГУ МВД РОССИИ ГУ МВД РОССИИ ГУ МВД РОССИИ ГУ Е
+
     def clear_xlsx():
         if path_xlsx != '':
-            book = openpyxl.load_workbook(path_xlsx)
-            sheet = book["Доверенность"]
-            sheet2 = book["Заявление"]
-            last_row = len(list(sheet.rows))
-            first_row = 1
-            sheet.delete_rows(first_row, last_row)
-            last_row2 = len(list(sheet2.rows))
-            first_row2 = 1
-            sheet2.delete_rows(first_row2, last_row2)
-            del1 = last_row - first_row
-            del2 = last_row2 - first_row2
-            if del1 < 0:
-                del1 = 0
-            if del2 < 0:
-                del2 = 0
-            book.save(path_xlsx)
-            info("Очистка таблицы", f'Успешно удалено строк: {del1} в листе "Доверенность" и '
-                                    f'{del2} в листе "Заявление"')
+            question = messagebox.askokcancel(title="Очистка таблицы", message="Вы уверены, что хотите очистить "
+                                                                         "таблицу?\nВсе "
+                                                                    "данные в таблице будут безвозвратно удалены!")
+            if question:
+                book = openpyxl.load_workbook(path_xlsx)
+                sheet = book["Доверенность"]
+                sheet2 = book["Заявление"]
+                last_row = len(list(sheet.rows))
+                first_row = 1
+                sheet.delete_rows(first_row, last_row)
+                last_row2 = len(list(sheet2.rows))
+                first_row2 = 1
+                sheet2.delete_rows(first_row2, last_row2)
+                del1 = last_row - first_row
+                del2 = last_row2 - first_row2
+                if del1 < 0:
+                    del1 = 0
+                if del2 < 0:
+                    del2 = 0
+                book.save(path_xlsx)
+                info("Очистка таблицы", f'Успешно удалено строк: {del1} в листе "Доверенность" и '
+                                        f'{del2} в листе "Заявление"')
+
+
         else:
             error("Ошибка входных данных", "Выберите таблицу с данными!")
 
@@ -232,7 +245,6 @@ def open_custom_fill():
         e_directors_job.insert(0, 'Главный врач')
         e_directors_name.insert(0, 'Н.Г. Филина')
         e_mail.insert(0, 'ikdomashenko@kkck.ru')
-
 
     def get_data():
         data = [[e_city.get(), e_fio.get(), e_director.get(), e_doc.get(), e_job.get(), e_name.get(), e_seria.get(),
@@ -248,9 +260,14 @@ def open_custom_fill():
             fam = temp2[0]
             name = temp2[1]
             otch = temp2[2]
+            temp = e_snils.get()
+            snils = "".join(c for c in temp if c.isalnum())
             data2 = [
-                [e_date.get(), e_code.get(), e_birth.get(), e_place_of_birth.get(), e_gender.get(), fam, name, otch,
-                 e_inn.get(), e_snils.get(), e_job.get(), e_mail.get(), e_city.get()]]
+                [
+                    e_seria.get(), e_number.get(), e_date.get(), e_code.get(), e_birth.get(), e_place_of_birth.get(),
+                    e_gender.get(), fam, name, otch, e_inn.get(), snils, e_job.get(), e_mail.get(), e_city.get()
+                ]
+            ]
             return data2
 
     def confirm_data():
@@ -258,8 +275,8 @@ def open_custom_fill():
             error("Ошибка входных данных", "Укажите таблицу данных!")
         else:
             if check_entry():
-                wb1 = openpyxl.load_workbook(path_xlsx)
-                sheet = wb1["Доверенность"]
+                wb = openpyxl.load_workbook(path_xlsx)
+                sheet = wb["Доверенность"]
                 temp = get_data()
                 try:
                     number = int(sheet["A"][-1].value) + 1
@@ -269,10 +286,10 @@ def open_custom_fill():
                 data[0].insert(0, number)
                 for row in data:
                     sheet.append(row)
-                wb1.save(path_xlsx)
+                # wb1.save(path_xlsx)
 
-                wb2 = openpyxl.load_workbook(path_xlsx)
-                sheet2 = wb2["Заявление"]
+                # wb2 = openpyxl.load_workbook(path_xlsx)
+                sheet2 = wb["Заявление"]
                 temp2 = get_data2()
                 try:
                     number = int(sheet2["A"][-1].value) + 1
@@ -282,8 +299,9 @@ def open_custom_fill():
                 data2[0].insert(0, number)
                 for row in data2:
                     sheet2.append(row)
-                wb2.save(path_xlsx)
+                wb.save(path_xlsx)
                 info('Обработка данных', f'Файл успешно сохранен! Добавлено строк: {len(data)}')
+                clear_data()
             else:
                 error("Ошибка входных данных", "Введите требуемые значения!")
 
@@ -309,6 +327,7 @@ def open_custom_fill():
         e_inn.delete(0, END)
         e_snils.delete(0, END)
         e_mail.delete(0, END)
+
 
     def on_closing():
         win.destroy()
@@ -337,7 +356,7 @@ def open_custom_fill():
     f3.pack(fill=X, padx=10, pady=10)
 
     f3_1 = Frame(win, bg="#F1EEE9")
-    f3_1.pack(fill=X, padx=10, pady=3)
+    f3_1.pack(fill=X, padx=10, pady=1)
 
     f4 = Frame(win, bg="#F1EEE9")
     f4.pack(fill=X, padx=10, pady=10)
@@ -417,16 +436,16 @@ def open_custom_fill():
     e_doc = Entry(f3)
     e_doc.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_3_1 = Label(f3_1, width=25, text='Уполномочивает')
+    label_3_1 = Label(f3_1, width=25, text='Уполномочивает', background='grey', foreground='yellow')
     label_3_1.pack(side=LEFT)
 
-    label_4 = Label(f4, width=25, text='Должность:')
+    label_4 = Label(f4, width=25, text='Должность:', background='grey', foreground='yellow')
     label_4.pack(side=LEFT)
 
     e_job = Entry(f4)
     e_job.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_5 = Label(f5, width=25, text='Сотрудника (полн.ФИО):')
+    label_5 = Label(f5, width=25, text='Сотрудника (полн.ФИО):', background='grey', foreground='yellow')
     label_5.pack(side=LEFT)
 
     e_name = Entry(f5)
@@ -516,18 +535,17 @@ def open_custom_fill():
     e_mail = Entry(f19)
     e_mail.pack(fill=X, padx=10, ipady=2, expand=True)
 
-
     btn_confirm = ttk.Button(f20, text="Принять", command=confirm_data)
     btn_confirm.pack(side=RIGHT, padx=10)
 
     btn_clear_e = ttk.Button(f20, text="Очистить", command=clear_data)
-    btn_clear_e.pack(side=LEFT, padx=10)
+    btn_clear_e.pack(side=LEFT, padx=5)
 
     btn_fill_e = ttk.Button(f20, text="Заполнить", command=insert_data)
-    btn_fill_e.pack(side=LEFT, padx=10)
+    btn_fill_e.pack(side=LEFT, padx=5)
 
     btn_fill_e = ttk.Button(f20, text="Шаблон", command=open_xlsx_sample)
-    btn_fill_e.pack(side=LEFT, padx=10)
+    btn_fill_e.pack(side=LEFT, padx=17)
 
     label12 = ttk.Label(f21, text="Статус загрузки файлов:")
     label12.pack(side=LEFT, padx=10)
@@ -539,6 +557,7 @@ def open_custom_fill():
     win.config(menu=main_menu)
 
     # Выбрать таблицу
+
     file_menu = Menu(main_menu, tearoff=0)
     file_menu.add_command(label="Выбрать таблицу c данными", command=open_xlsx)
     file_menu.add_command(label="Очистить таблицу", command=clear_xlsx)
