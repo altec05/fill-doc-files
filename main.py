@@ -6,11 +6,13 @@ import os
 from pathlib import Path
 from tkinter import filedialog
 from tkinter import ttk
+import re
 import faker
 from random import randrange
 
 path_sample = ''
 path_table = ''
+user_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents', 'Шаблоны')
 
 
 def error(title, text):
@@ -23,7 +25,7 @@ def info(title, text):
 
 def open_sample_doc():
     global path_sample
-    path_sample = filedialog.askopenfilename(title="Выбор шаблона для заполнения",
+    path_sample = filedialog.askopenfilename(title="Выбор шаблона для заполнения", initialdir=user_path,
                                              filetypes=(("Документы (*.docx)",
                                                          "*.docx"),
                                                         ("Все файлы", "*.*")))
@@ -33,7 +35,7 @@ def open_sample_doc():
 
 def open_table():
     global path_table
-    path_table = filedialog.askopenfilename(title="Выбор таблицы для заполнения",
+    path_table = filedialog.askopenfilename(title="Выбор таблицы для заполнения", initialdir=user_path,
                                             filetypes=(("Таблицы (*.xlsx)",
                                                         "*.xlsx"),
                                                        ("Все файлы", "*.*")))
@@ -85,8 +87,6 @@ def get_dict():
 def start(test):
     x = 0
     files = 0
-
-    user_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents')
     path = Path(user_path + '/Доверенности')
 
     if not path.exists():
@@ -131,7 +131,6 @@ def fill_files():
 
 
 def open_dir():
-    user_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents')
     path = Path(user_path + '/Доверенности')
 
     if path.exists():
@@ -144,10 +143,10 @@ def open_custom_fill():
     path_xlsx = ''
 
     def check_entry():
-        if e_city.get() and e_fio.get() and e_director.get() and e_doc.get() and \
+        if combo_city.get() and e_fio.get() and e_director.get() and e_doc.get() and \
                 e_job.get() and e_name.get() and e_seria.get() and e_number.get() and e_date.get() and \
                 e_point_of_get.get() and e_directors_job.get() and e_directors_name.get() and \
-                e_code.get() and e_birth.get() and e_place_of_birth.get() and e_gender.get() and e_full_fio.get() and \
+                e_code.get() and e_birth.get() and e_place_of_birth.get() and gender.get() and e_full_fio.get() and \
                 e_inn.get() and e_snils.get() and e_mail.get():
             return True
         else:
@@ -155,7 +154,7 @@ def open_custom_fill():
 
     def open_xlsx():
         nonlocal path_xlsx
-        path_xlsx = filedialog.askopenfilename(title="Выберите вашу таблицу с данными",
+        path_xlsx = filedialog.askopenfilename(title="Выберите вашу таблицу с данными", initialdir=user_path,
                                                filetypes=(("Таблицы (*.xlsx)",
                                                            "*.xlsx"),
                                                           ("Все файлы", "*.*")))
@@ -163,8 +162,7 @@ def open_custom_fill():
             label13['foreground'] = 'green'
 
     def open_xlsx_sample():
-        user_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents')
-        path = Path(user_path + '/Шаблоны')
+        path = Path(user_path)
 
         if path.exists():
             os.startfile(path)
@@ -197,8 +195,7 @@ def open_custom_fill():
             sheet_2.column_dimensions[l[k]].width = 20
             k += 1
 
-        user_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents')
-        path = Path(user_path+'/Шаблоны')
+        path = Path(user_path)
         if not path.exists():
             os.mkdir(path)
 
@@ -211,8 +208,8 @@ def open_custom_fill():
     def clear_xlsx():
         if path_xlsx != '':
             question = messagebox.askokcancel(title="Очистка таблицы", message="Вы уверены, что хотите очистить "
-                                                                         "таблицу?\nВсе "
-                                                                    "данные в таблице будут безвозвратно удалены!")
+                                                                               "таблицу?\nВсе "
+                                                                               "данные в таблице будут безвозвратно удалены!")
             if question:
                 book = openpyxl.load_workbook(path_xlsx)
                 sheet = book["Доверенность"]
@@ -239,7 +236,7 @@ def open_custom_fill():
 
     def insert_data():
         clear_data()
-        e_city.insert(0, 'Красноярск')
+        # e_city.insert(0, 'Красноярск')
         e_director.insert(0, 'Главного врача Филиной Натальи Григорьевны')
         e_doc.insert(0, 'Устава, утвержденного Приказом от 28.12.2021 №2586-орг')
         e_directors_job.insert(0, 'Главный врач')
@@ -247,7 +244,7 @@ def open_custom_fill():
         e_mail.insert(0, 'ikdomashenko@kkck.ru')
 
     def get_data():
-        data = [[e_city.get(), e_fio.get(), e_director.get(), e_doc.get(), e_job.get(), e_name.get(), e_seria.get(),
+        data = [[combo_city.get(), e_fio.get(), e_director.get(), e_doc.get(), e_job.get(), e_name.get(), e_seria.get(),
                  e_number.get(), e_date.get(), e_point_of_get.get(), e_directors_job.get(), e_directors_name.get()]]
         return data
 
@@ -265,7 +262,7 @@ def open_custom_fill():
             data2 = [
                 [
                     e_seria.get(), e_number.get(), e_date.get(), e_code.get(), e_birth.get(), e_place_of_birth.get(),
-                    e_gender.get(), fam, name, otch, e_inn.get(), snils, e_job.get(), e_mail.get(), e_city.get()
+                    gender.get(), fam, name, otch, e_inn.get(), snils, e_job.get(), e_mail.get(), combo_city.get()
                 ]
             ]
             return data2
@@ -305,8 +302,29 @@ def open_custom_fill():
             else:
                 error("Ошибка входных данных", "Введите требуемые значения!")
 
+    def del_city():
+        que = messagebox.askokcancel(title="Удалить город из списка", message=f"Вы уверены, что хотите удалить {combo_city.get()} из списка?")
+        if que:
+            path_dir_txt = Path(user_path + '/Города')
+            file_path = Path(rf"{path_dir_txt}\cities.txt")
+            with open(file_path) as f:
+                lines = f.readlines()
+
+            str = combo_city.get()
+            pattern = re.compile(re.escape(str))
+            with open(file_path, 'w') as f:
+                for line in lines:
+                    result = pattern.search(line)
+                    if result is None:
+                        f.write(line)
+
+            upd_cities = r_cities_txt()
+            combo_city.config(values=upd_cities)
+            combo_city.current(2)
+
+
     def clear_data():
-        e_city.delete(0, END)
+        # e_city.delete(0, END)
         e_fio.delete(0, END)
         e_director.delete(0, END)
         e_doc.delete(0, END)
@@ -322,19 +340,94 @@ def open_custom_fill():
         e_code.delete(0, END)
         e_birth.delete(0, END)
         e_place_of_birth.delete(0, END)
-        e_gender.delete(0, END)
+        # e_gender.delete(0, END)
+
         e_full_fio.delete(0, END)
         e_inn.delete(0, END)
         e_snils.delete(0, END)
         e_mail.delete(0, END)
 
-
     def on_closing():
         win.destroy()
         root.deiconify()
 
+    def close_ad(city):
+        w_cities_txt(city)
+        upd_cities = r_cities_txt()
+        combo_city.config(values=upd_cities)
+        combo_city.current(len(upd_cities)-1)
+
+    def r_cities_txt():
+        path_dir_txt = Path(user_path + '/Города')
+        if not path_dir_txt.exists():
+            os.mkdir(path_dir_txt)
+
+        file_path = Path(rf"{path_dir_txt}\cities.txt")
+        if not file_path.exists():
+            my_file = open(rf"{path_dir_txt}\cities.txt", "w+")
+            for city in cities:
+                my_file.write(city + f'\n')
+            my_file.close()
+
+        data = []
+        r_file = open(rf"{path_dir_txt}\cities.txt", "r").readlines()
+        for line in r_file:
+            data.append(line)
+        return data
+
+    def w_cities_txt(temp):
+        path_dir_txt = Path(user_path + '/Города')
+        if not path_dir_txt.exists():
+            os.mkdir(path_dir_txt)
+
+        file_path = Path(rf"{path_dir_txt}\cities.txt")
+        if not file_path.exists():
+            my_file = open(rf"{path_dir_txt}\cities.txt", "w+")
+            for city in cities:
+                my_file.write(city + f'\n')
+            my_file.write(temp + f'\n')
+            my_file.close()
+        else:
+            my_file = open(rf"{path_dir_txt}\cities.txt", "a+")
+            my_file.write(temp + f'\n')
+            my_file.close()
+
+
+    def update_cities():
+        def close_win_ad():
+            ad.destroy()
+            win.deiconify()
+
+        def add():
+            city = e_new_city.get()
+            if city != '':
+                close_ad(city)
+                ad.destroy()
+                win.deiconify()
+            else:
+                error("Ошибка ввода", "Вы ввели некорректное значение!")
+
+        ad = Toplevel()
+        ad.geometry('400x100+100+50')
+        ad.title('Введите новый город')
+        ad.grab_set()
+        win.withdraw()
+        ad.protocol("WM_DELETE_WINDOW", close_win_ad)
+        ad.resizable(False, False)
+        ad.config(bg="#F1EEE9")
+
+        f0 = Frame(ad, bg="#F1EEE9")
+        f0.pack(fill=BOTH, padx=10, pady=10)
+
+        e_new_city = Entry(f0)
+        e_new_city.pack(fill=X, padx=10, ipady=2, expand=True)
+
+        btn_add_city = ttk.Button(f0, text="Принять", command=add)
+        btn_add_city.pack(side=BOTTOM, padx=5)
+
+
     win = Toplevel()
-    win.geometry('600x900+100+50')
+    win.geometry('650x900+100+50')
     win.title('Внесение данных в таблицу')
     win.grab_set()
     root.withdraw()
@@ -415,8 +508,17 @@ def open_custom_fill():
     label_0 = Label(f0, width=25, text='Город:')
     label_0.pack(side=LEFT)
 
-    e_city = Entry(f0)
-    e_city.pack(fill=X, padx=10, ipady=2, expand=True)
+    btn_add_city = ttk.Button(f0, text="Другой", command=update_cities)
+    btn_add_city.pack(side=LEFT, padx=5)
+
+    cities = ['Ачинск', 'Канск', 'Красноярск', 'Лесосибирск', 'Минусинск', 'Норильск']
+    actual_cities = r_cities_txt()
+    combo_city = ttk.Combobox(f0, values=actual_cities)
+    combo_city.current(2)
+    combo_city.pack(side=LEFT, fill=X, padx=10)
+
+    btn_del_city = ttk.Button(f0, text="<- Удалить", command=del_city)
+    btn_del_city.pack(side=LEFT, padx=2)
 
     label_1 = Label(f1, width=25, text='Фамилия И.О.:')
     label_1.pack(side=LEFT)
@@ -451,41 +553,41 @@ def open_custom_fill():
     e_name = Entry(f5)
     e_name.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_6 = Label(f6, width=25, text='Серия паспорта:')
+    label_17 = Label(f6, width=25, text='ИНН:')
+    label_17.pack(side=LEFT)
+
+    e_inn = Entry(f6)
+    e_inn.pack(fill=X, padx=10, ipady=2, expand=True)
+
+    label_18 = Label(f7, width=25, text='СНИЛС:')
+    label_18.pack(side=LEFT)
+
+    e_snils = Entry(f7)
+    e_snils.pack(fill=X, padx=10, ipady=2, expand=True)
+
+    label_6 = Label(f8, width=25, text='Серия паспорта:')
     label_6.pack(side=LEFT)
 
-    e_seria = Entry(f6)
+    e_seria = Entry(f8)
     e_seria.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_7 = Label(f7, width=25, text='Номер паспорта:')
+    label_7 = Label(f9, width=25, text='Номер паспорта:')
     label_7.pack(side=LEFT)
 
-    e_number = Entry(f7)
+    e_number = Entry(f9)
     e_number.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_8 = Label(f8, width=25, text='Дата выдачи паспорта:')
-    label_8.pack(side=LEFT)
-
-    e_date = Entry(f8)
-    e_date.pack(fill=X, padx=10, ipady=2, expand=True)
-
-    label_9 = Label(f9, width=25, text='Кем выдан:')
+    label_9 = Label(f10, width=25, text='Кем выдан:')
     label_9.pack(side=LEFT)
 
-    e_point_of_get = Entry(f9)
+    e_point_of_get = Entry(f10)
     e_point_of_get.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_10 = Label(f10, width=25, text='Должность руководителя:')
-    label_10.pack(side=LEFT)
+    label_8 = Label(f11, width=25, text='Дата выдачи паспорта:')
+    label_8.pack(side=LEFT)
 
-    e_directors_job = Entry(f10)
-    e_directors_job.pack(fill=X, padx=10, ipady=2, expand=True)
-
-    label_11 = Label(f11, width=25, text='И.О.Фамилия руководителя:')
-    label_11.pack(side=LEFT)
-
-    e_directors_name = Entry(f11)
-    e_directors_name.pack(fill=X, padx=10, ipady=2, expand=True)
+    e_date = Entry(f11)
+    e_date.pack(fill=X, padx=10, ipady=2, expand=True)
 
     label_12 = Label(f12, width=25, text='Код места выдачи:')
     label_12.pack(side=LEFT)
@@ -493,41 +595,46 @@ def open_custom_fill():
     e_code = Entry(f12)
     e_code.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_13 = Label(f13, width=25, text='Дата рождения:')
-    label_13.pack(side=LEFT)
-
-    e_birth = Entry(f13)
-    e_birth.pack(fill=X, padx=10, ipady=2, expand=True)
-
-    label_14 = Label(f14, width=25, text='Место рождения:')
-    label_14.pack(side=LEFT)
-
-    e_place_of_birth = Entry(f14)
-    e_place_of_birth.pack(fill=X, padx=10, ipady=2, expand=True)
-
-    label_15 = Label(f15, width=25, text='Пол:')
-    label_15.pack(side=LEFT)
-
-    e_gender = Entry(f15)
-    e_gender.pack(fill=X, padx=10, ipady=2, expand=True)
-
-    label_16 = Label(f16, width=25, text='ФИО (полное):')
+    label_16 = Label(f13, width=25, text='ФИО (полное):')
     label_16.pack(side=LEFT)
 
-    e_full_fio = Entry(f16)
+    e_full_fio = Entry(f13)
     e_full_fio.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_17 = Label(f17, width=25, text='ИНН:')
-    label_17.pack(side=LEFT)
+    label_15 = Label(f14, width=25, text='Пол:')
+    label_15.pack(side=LEFT)
 
-    e_inn = Entry(f17)
-    e_inn.pack(fill=X, padx=10, ipady=2, expand=True)
+    gender = IntVar()
 
-    label_18 = Label(f18, width=25, text='СНИЛС:')
-    label_18.pack(side=LEFT)
+    male_checkbutton = Radiobutton(f14, text="М", value="М", variable=gender, padx=10)
+    male_checkbutton.pack(side=LEFT)
 
-    e_snils = Entry(f18)
-    e_snils.pack(fill=X, padx=10, ipady=2, expand=True)
+    female_checkbutton = Radiobutton(f14, text="Ж", value="Ж", variable=gender, padx=10)
+    female_checkbutton.pack(side=LEFT)
+
+    label_13 = Label(f15, width=25, text='Дата рождения:')
+    label_13.pack(side=LEFT)
+
+    e_birth = Entry(f15)
+    e_birth.pack(fill=X, padx=10, ipady=2, expand=True)
+
+    label_14 = Label(f16, width=25, text='Место рождения:')
+    label_14.pack(side=LEFT)
+
+    e_place_of_birth = Entry(f16)
+    e_place_of_birth.pack(fill=X, padx=10, ipady=2, expand=True)
+
+    label_10 = Label(f17, width=25, text='Должность руководителя:')
+    label_10.pack(side=LEFT)
+
+    e_directors_job = Entry(f17)
+    e_directors_job.pack(fill=X, padx=10, ipady=2, expand=True)
+
+    label_11 = Label(f18, width=25, text='И.О.Фамилия руководителя:')
+    label_11.pack(side=LEFT)
+
+    e_directors_name = Entry(f18)
+    e_directors_name.pack(fill=X, padx=10, ipady=2, expand=True)
 
     label_19 = Label(f19, width=25, text='Почта:')
     label_19.pack(side=LEFT)
