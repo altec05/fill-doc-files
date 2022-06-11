@@ -234,6 +234,8 @@ def open_custom_fill():
         else:
             error("Ошибка входных данных", "Выберите таблицу с данными!")
 
+    gender_data = ''
+
     def insert_data():
         clear_data()
         # e_city.insert(0, 'Красноярск')
@@ -244,7 +246,7 @@ def open_custom_fill():
         e_mail.insert(0, 'ikdomashenko@kkck.ru')
 
     def get_data():
-        data = [[combo_city.get(), e_fio.get(), e_director.get(), e_doc.get(), e_job.get(), e_name.get(), e_seria.get(),
+        data = [[gender_data, e_fio.get(), e_director.get(), e_doc.get(), e_job.get(), e_name.get(), e_seria.get(),
                  e_number.get(), e_date.get(), e_point_of_get.get(), e_directors_job.get(), e_directors_name.get()]]
         return data
 
@@ -347,6 +349,14 @@ def open_custom_fill():
         e_snils.delete(0, END)
         e_mail.delete(0, END)
 
+    def select():
+        nonlocal gender_data
+        l = gender.get()
+        if l == 1:
+            gender_data = 'М'
+        elif l == 2:
+            gender_data = 'Ж'
+
     def on_closing():
         win.destroy()
         root.deiconify()
@@ -355,7 +365,7 @@ def open_custom_fill():
         w_cities_txt(city)
         upd_cities = r_cities_txt()
         combo_city.config(values=upd_cities)
-        combo_city.current(len(upd_cities)-1)
+        combo_city.current(len(upd_cities) - 1)
 
     def r_cities_txt():
         path_dir_txt = Path(user_path + '/Города')
@@ -391,7 +401,6 @@ def open_custom_fill():
             my_file = open(rf"{path_dir_txt}\cities.txt", "a+")
             my_file.write(temp + f'\n')
             my_file.close()
-
 
     def update_cities():
         def close_win_ad():
@@ -606,10 +615,10 @@ def open_custom_fill():
 
     gender = IntVar()
 
-    male_checkbutton = Radiobutton(f14, text="М", value="М", variable=gender, padx=10)
+    male_checkbutton = Radiobutton(f14, text="М", value=1, variable=gender, padx=10, command=select)
     male_checkbutton.pack(side=LEFT)
 
-    female_checkbutton = Radiobutton(f14, text="Ж", value="Ж", variable=gender, padx=10)
+    female_checkbutton = Radiobutton(f14, text="Ж", value=2, variable=gender, padx=10, command=select)
     female_checkbutton.pack(side=LEFT)
 
     label_13 = Label(f15, width=25, text='Дата рождения:')
