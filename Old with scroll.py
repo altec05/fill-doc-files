@@ -246,8 +246,7 @@ def open_custom_fill():
         e_mail.insert(0, 'ikdomashenko@kkck.ru')
 
     def get_data():
-        city = combo_city.get().rstrip()
-        data = [[city, e_fio.get(), e_director.get(), e_doc.get(), e_job.get(), e_name.get(), e_seria.get(),
+        data = [[gender_data, e_fio.get(), e_director.get(), e_doc.get(), e_job.get(), e_name.get(), e_seria.get(),
                  e_number.get(), e_date.get(), e_point_of_get.get(), e_directors_job.get(), e_directors_name.get()]]
         return data
 
@@ -266,7 +265,7 @@ def open_custom_fill():
             data2 = [
                 [
                     e_seria.get(), e_number.get(), e_date.get(), e_code.get(), e_birth.get(), e_place_of_birth.get(),
-                    gender_data, fam, name, otch, e_inn.get(), snils, e_job.get(), e_mail.get(), city
+                    gender.get(), fam, name, otch, e_inn.get(), snils, e_job.get(), e_mail.get(), city
                 ]
             ]
             return data2
@@ -307,8 +306,7 @@ def open_custom_fill():
                 error("Ошибка входных данных", "Введите требуемые значения!")
 
     def del_city():
-        que = messagebox.askokcancel(title="Удалить город из списка",
-                                     message=f"Вы уверены, что хотите удалить {combo_city.get()} из списка?")
+        que = messagebox.askokcancel(title="Удалить город из списка", message=f"Вы уверены, что хотите удалить {combo_city.get()} из списка?")
         if que:
             path_dir_txt = Path(user_path + '/Города')
             file_path = Path(rf"{path_dir_txt}\cities.txt")
@@ -326,6 +324,7 @@ def open_custom_fill():
             upd_cities = r_cities_txt()
             combo_city.config(values=upd_cities)
             combo_city.current(2)
+
 
     def clear_data():
         # e_city.delete(0, END)
@@ -367,7 +366,7 @@ def open_custom_fill():
         w_cities_txt(city)
         upd_cities = r_cities_txt()
         combo_city.config(values=upd_cities)
-        combo_city.current(len(upd_cities) - 1)
+        combo_city.current(len(upd_cities)-1)
 
     def r_cities_txt():
         path_dir_txt = Path(user_path + '/Города')
@@ -404,6 +403,7 @@ def open_custom_fill():
             my_file.write(temp + f'\n')
             my_file.close()
 
+
     def update_cities():
         def close_win_ad():
             ad.destroy()
@@ -428,7 +428,7 @@ def open_custom_fill():
         ad.config(bg="#F1EEE9")
 
         f0 = Frame(ad, bg="#F1EEE9")
-        f0.pack(fill=BOTH, padx=10, pady=5)
+        f0.pack(fill=BOTH, padx=10, pady=10)
 
         e_new_city = Entry(f0)
         e_new_city.pack(fill=X, padx=10, ipady=2, expand=True)
@@ -436,268 +436,271 @@ def open_custom_fill():
         btn_add_city = ttk.Button(f0, text="Принять", command=add)
         btn_add_city.pack(side=BOTTOM, padx=5)
 
+    def on_mousewheel1(event):
+        my_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+    def set_binds_canvas1(event):
+        win.bind_all("<MouseWheel>", on_mousewheel1)
+
     win = Toplevel()
-    win.geometry('1500x510+100+50')
+    win.geometry('1500x590+100+50')
     win.title('Внесение данных в таблицу')
     win.grab_set()
     root.withdraw()
     win.protocol("WM_DELETE_WINDOW", on_closing)
-    win.resizable(True, False)
-    win.minsize(1300, 200)
-    win.config(bg="#F1EEE9")
-    win.columnconfigure(index=0, minsize=550, weight=550, pad=2)
-    win.columnconfigure(index=1, minsize=600, weight=550, pad=2)
-    win.columnconfigure(index=2, weight=50, pad=1)
+    # win.resizable(True, False)
+    # win.minsize(1000, 550)
+    win.config()
 
-    f0 = Frame(win, bg="#F1EEE9")
-    # f0.pack(fill=X, padx=10, pady=5)
-    f0.grid(row=0, column=0, sticky=W + E, padx=5)
 
-    f1 = Frame(win, bg="#F1EEE9")
-    # f1.pack(fill=X, padx=10, pady=5)
-    f1.grid(row=1, column=0, sticky=W + E, padx=5)
+    # canvas, который будет прокручиваться sb
+    my_canvas = Canvas(win, bg='green')
+    my_canvas.pack(side=LEFT, fill=BOTH, expand=True)
 
-    f2 = Frame(win, bg="#F1EEE9")
-    # f2.pack(fill=X, padx=10, pady=5)
-    f2.grid(row=2, column=0, sticky=W + E, padx=5)
+    # sec_f, который создаётся методом от canvas и в нём будут лежать фреймы
+    sec_f = Frame(my_canvas, bg="blue")
+    sec_f.pack(side=LEFT, fill=BOTH, expand=True)
 
-    f3 = Frame(win, bg="#F1EEE9")
-    # f3.pack(fill=X, padx=10, pady=5)
-    f3.grid(row=3, column=0, sticky=W + E, padx=5)
+    # scrollbar
+    my_scrollbar = ttk.Scrollbar(win, orient=VERTICAL, command=my_canvas.yview)
+    my_scrollbar.pack(side=RIGHT, fill=Y)
 
-    f3_1 = Frame(win, bg="#F1EEE9")
-    # f3_1.pack(fill=X, padx=10, pady=1)
-    f3_1.grid(row=6, column=0, sticky=W + E, padx=5)
+    my_canvas.configure(yscrollcommand=my_scrollbar.set)
+    my_canvas.bind(
+        '<Configure>', lambda e: my_canvas.configure(scrollregion=my_canvas.bbox("all"))
+    )
 
-    f4 = Frame(win, bg="#F1EEE9")
-    # f4.pack(fill=X, padx=10, pady=5)
-    f4.grid(row=7, column=0, sticky=W + E, padx=5)
+    my_canvas.create_window((0, 0), window=sec_f)
+    win.bind("<Enter>", set_binds_canvas1)
 
-    f5 = Frame(win, bg="#F1EEE9")
-    # f5.pack(fill=X, padx=10, pady=5)
-    f5.grid(row=8, column=0, sticky=W + E, padx=5)
+    # f0 = Frame(my_canvas, bg="#F1EEE9")
+    # f0.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NW, expand=True)
+    #
+    # f1 = Frame(my_canvas, bg="#F1EEE9")
+    # f1.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NW, expand=True)
+    #
+    # f2 = Frame(my_canvas, bg="#F1EEE9")
+    # f2.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NW)
+    #
+    # f3 = Frame(my_canvas, bg="#F1EEE9")
+    # f3.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NW)
+    #
+    # f3_1 = Frame(my_canvas, bg="#F1EEE9")
+    # f3_1.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NW)
+    #
+    # f4 = Frame(my_canvas, bg="#F1EEE9")
+    # f4.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NW)
+    #
+    # f5 = Frame(my_canvas, bg="#F1EEE9")
+    # f5.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NW)
+    #
+    # f6 = Frame(my_canvas, bg="#F1EEE9")
+    # f6.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NW)
+    #
+    # f7 = Frame(my_canvas, bg="#F1EEE9")
+    # f7.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NW)
+    #
+    # f8 = Frame(my_canvas, bg="#F1EEE9")
+    # f8.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NW)
+    #
+    # f9 = Frame(my_canvas, bg="#F1EEE9")
+    # f9.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NW)
+    #
+    # f10 = Frame(my_canvas, bg="#F1EEE9")
+    # f10.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NW)
+    #
+    # f11 = Frame(my_canvas, bg="#F1EEE9")
+    # f11.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NW)
+    #
+    # f12 = Frame(my_canvas, bg="#F1EEE9")
+    # f12.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NW)
+    #
+    # f13 = Frame(my_canvas, bg="#F1EEE9")
+    # f13.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NE)
+    #
+    # f14 = Frame(my_canvas, bg="#F1EEE9")
+    # f14.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NE)
+    #
+    # f15 = Frame(sec_f, bg="#F1EEE9")
+    # f15.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NE)
+    #
+    # f16 = Frame(sec_f, bg="#F1EEE9")
+    # f16.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NE)
+    #
+    # f17 = Frame(sec_f, bg="#F1EEE9")
+    # f17.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NE)
+    #
+    # f18 = Frame(sec_f, bg="#F1EEE9")
+    # f18.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NE)
+    #
+    # f19 = Frame(sec_f, bg="#F1EEE9")
+    # f19.pack(side=TOP, fill=X, padx=10, pady=10, anchor=NE)
+    #
+    # f20 = Frame(sec_f, bg="#F1EEE9")
+    # f20.pack(side=TOP, fill=X, padx=10, pady=10, anchor=S)
+    #
+    # f21 = Frame(sec_f, bg="#F1EEE9")
+    # f21.pack(side=TOP, fill=X, padx=10, pady=10, anchor=S)
 
-    f6 = Frame(win, bg="#F1EEE9")
-    # f6.pack(fill=X, padx=10, pady=5)
-    f6.grid(row=9, column=0, sticky=W + E, padx=5)
+    label_0 = Label(sec_f, width=25, text='Город:')
+    label_0.pack(side=LEFT)
 
-    f7 = Frame(win, bg="#F1EEE9")
-    # f7.pack(fill=X, padx=10, pady=5)
-    f7.grid(row=10, column=0, sticky=W + E, padx=5)
-
-    f8 = Frame(win, bg="#F1EEE9")
-    # f8.pack(fill=X, padx=10, pady=5)
-    f8.grid(row=11, column=1, sticky=W + E, padx=5)
-
-    f9 = Frame(win, bg="#F1EEE9")
-    # f9.pack(fill=X, padx=10, pady=5)
-    f9.grid(row=1, column=1, sticky=W + E, padx=5)
-
-    f10 = Frame(win, bg="#F1EEE9")
-    # f10.pack(fill=X, padx=10, pady=5)
-    f10.grid(row=2, column=1, sticky=W + E, padx=5)
-
-    f11 = Frame(win, bg="#F1EEE9")
-    # f11.pack(fill=X, padx=10, pady=5)
-    f11.grid(row=3, column=1, sticky=W + E, padx=5)
-
-    f12 = Frame(win, bg="#F1EEE9")
-    # f12.pack(fill=X, padx=10, pady=5)
-    f12.grid(row=4, column=1, sticky=W + E, padx=5)
-
-    f13 = Frame(win, bg="#F1EEE9")
-    # f13.pack(fill=X, padx=10, pady=5)
-    f13.grid(row=0, column=1, sticky=W + E, padx=5)
-
-    f14 = Frame(win, bg="#F1EEE9")
-    # f14.pack(fill=X, padx=10, pady=5)
-    f14.grid(row=6, column=1, sticky=W + E, padx=5)
-
-    f15 = Frame(win, bg="#F1EEE9")
-    # f15.pack(fill=X, padx=10, pady=5)
-    f15.grid(row=7, column=1, sticky=W + E, padx=5)
-
-    f16 = Frame(win, bg="#F1EEE9")
-    # f16.pack(fill=X, padx=10, pady=5)
-    f16.grid(row=8, column=1, sticky=W + E, padx=5)
-
-    f17 = Frame(win, bg="#F1EEE9")
-    # f17.pack(fill=X, padx=10, pady=5)
-    f17.grid(row=9, column=1, sticky=W + E, padx=5)
-
-    f18 = Frame(win, bg="#F1EEE9")
-    # f18.pack(fill=X, padx=10, pady=5)
-    f18.grid(row=10, column=1, sticky=W + E, padx=5)
-
-    f19 = Frame(win, bg="#F1EEE9")
-    # f19.pack(fill=X, padx=10, pady=5)
-    f19.grid(row=11, column=1, sticky=W + E, padx=5)
-
-    f20 = Frame(win, bg="#F1EEE9")
-    # f20.pack(fill=X, padx=10, pady=5)
-    f20.grid(row=12, column=0, sticky=W + E, padx=5)
-
-    f21 = Frame(win, bg="#F1EEE9")
-    # f21.pack(fill=X, padx=10, pady=5)
-    f21.grid(row=13, column=0, sticky=W + E, padx=5)
-
-    label_0 = Label(f0, width=25, text='Город:')
-    label_0.pack(side=LEFT, pady=5)
-
-    btn_add_city = ttk.Button(f0, text="Другой", command=update_cities)
+    btn_add_city = ttk.Button(sec_f, text="Другой", command=update_cities)
     btn_add_city.pack(side=LEFT, padx=5)
 
     cities = ['Ачинск', 'Канск', 'Красноярск', 'Лесосибирск', 'Минусинск', 'Норильск']
     actual_cities = r_cities_txt()
-    combo_city = ttk.Combobox(f0, values=actual_cities)
+    combo_city = ttk.Combobox(sec_f, values=actual_cities)
     combo_city.current(2)
-    combo_city.pack(side=LEFT, fill=X, padx=10, pady=5)
+    combo_city.pack(side=LEFT, fill=X, padx=10)
 
-    btn_del_city = ttk.Button(f0, text="<- Удалить", command=del_city)
-    btn_del_city.pack(side=LEFT, padx=2, pady=5)
+    btn_del_city = ttk.Button(sec_f, text="<- Удалить", command=del_city)
+    btn_del_city.pack(side=LEFT, padx=2)
 
-    label_1 = Label(f1, width=25, text='Фамилия И.О.:')
-    label_1.pack(side=LEFT, pady=5)
+    label_1 = Label(sec_f, width=25, text='Фамилия И.О.:')
+    label_1.pack(side=TOP, anchor=NW, expand=True)
 
-    e_fio = Entry(f1)
-    e_fio.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+    e_fio = Entry(sec_f)
+    e_fio.pack(side=TOP, anchor=NW, fill=X, padx=10, ipady=2, expand=True)
 
-    label_2 = Label(f2, width=25, text='В лице руководителя:')
-    label_2.pack(side=LEFT, pady=5)
+    label_2 = Label(sec_f, width=25, text='В лице руководителя:')
+    label_2.pack(side=TOP, anchor=NW )
 
-    e_director = Entry(f2)
-    e_director.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+    e_director = Entry(sec_f)
+    e_director.pack(side=TOP, anchor=NW, fill=X, padx=10, ipady=2, expand=True)
 
-    label_3 = Label(f3, width=25, text='На основании:')
-    label_3.pack(side=LEFT, pady=5)
+    label_3 = Label(sec_f, width=25, text='На основании:')
+    label_3.pack(side=TOP, anchor=NW)
 
-    e_doc = Entry(f3)
-    e_doc.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+    e_doc = Entry(sec_f)
+    e_doc.pack(side=TOP, anchor=NW, fill=X, padx=10, ipady=2, expand=True)
 
-    label_3_1 = Label(f3_1, width=25, text='Уполномочивает', background='grey', foreground='yellow')
-    label_3_1.pack(side=TOP, pady=5)
+    label_3_1 = Label(sec_f, width=25, text='Уполномочивает', background='grey', foreground='yellow')
+    label_3_1.pack(side=LEFT)
 
-    label_4 = Label(f4, width=25, text='Должность:')
-    label_4.pack(side=LEFT, pady=5)
+    label_4 = Label(sec_f, width=25, text='Должность:', background='grey', foreground='yellow')
+    label_4.pack(side=LEFT)
 
-    e_job = Entry(f4)
-    e_job.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+    e_job = Entry(sec_f)
+    e_job.pack(side=TOP, anchor=NW, fill=X, padx=10, ipady=2, expand=True)
 
-    label_5 = Label(f5, width=25, text='Сотрудника (полн.ФИО):')
-    label_5.pack(side=LEFT, pady=5)
+    label_5 = Label(sec_f, width=25, text='Сотрудника (полн.ФИО):', background='grey', foreground='yellow')
+    label_5.pack(side=LEFT)
 
-    e_name = Entry(f5)
-    e_name.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+    e_name = Entry(sec_f)
+    e_name.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_17 = Label(f6, width=25, text='ИНН:')
-    label_17.pack(side=LEFT, pady=5)
+    label_17 = Label(sec_f, width=25, text='ИНН:')
+    label_17.pack(side=LEFT)
 
-    e_inn = Entry(f6)
-    e_inn.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+    e_inn = Entry(sec_f)
+    e_inn.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_18 = Label(f7, width=25, text='СНИЛС:')
-    label_18.pack(side=LEFT, pady=5)
+    label_18 = Label(sec_f, width=25, text='СНИЛС:')
+    label_18.pack(side=LEFT)
 
-    e_snils = Entry(f7)
-    e_snils.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+    e_snils = Entry(sec_f)
+    e_snils.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_6 = Label(f8, width=25, text='Серия паспорта:')
-    label_6.pack(side=LEFT, pady=5)
+    label_6 = Label(sec_f, width=25, text='Серия паспорта:')
+    label_6.pack(side=LEFT)
 
-    e_seria = Entry(f8)
-    e_seria.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+    e_seria = Entry(sec_f)
+    e_seria.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_7 = Label(f9, width=25, text='Номер паспорта:')
-    label_7.pack(side=LEFT, pady=5)
+    label_7 = Label(sec_f, width=25, text='Номер паспорта:')
+    label_7.pack(side=LEFT)
 
-    e_number = Entry(f9)
-    e_number.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+    e_number = Entry(sec_f)
+    e_number.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_9 = Label(f10, width=25, text='Кем выдан:')
-    label_9.pack(side=LEFT, pady=5)
+    label_9 = Label(sec_f, width=25, text='Кем выдан:')
+    label_9.pack(side=LEFT)
 
-    e_point_of_get = Entry(f10)
-    e_point_of_get.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+    e_point_of_get = Entry(sec_f)
+    e_point_of_get.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_8 = Label(f11, width=25, text='Дата выдачи паспорта:')
-    label_8.pack(side=LEFT, pady=5)
+    label_8 = Label(sec_f, width=25, text='Дата выдачи паспорта:')
+    label_8.pack(side=LEFT)
 
-    e_date = Entry(f11)
-    e_date.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+    e_date = Entry(sec_f)
+    e_date.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_12 = Label(f12, width=25, text='Код места выдачи:')
-    label_12.pack(side=LEFT, pady=5)
+    label_12 = Label(sec_f, width=25, text='Код места выдачи:')
+    label_12.pack(side=LEFT)
 
-    e_code = Entry(f12)
-    e_code.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+    e_code = Entry(sec_f)
+    e_code.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_16 = Label(f13, width=25, text='ФИО (полное):')
-    label_16.pack(side=LEFT, pady=5)
+    label_16 = Label(sec_f, width=25, text='ФИО (полное):')
+    label_16.pack(side=LEFT)
 
-    e_full_fio = Entry(f13)
-    e_full_fio.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+    e_full_fio = Entry(sec_f)
+    e_full_fio.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_15 = Label(f14, width=25, text='Пол:')
-    label_15.pack(side=LEFT, pady=5)
+    label_15 = Label(sec_f, width=25, text='Пол:')
+    label_15.pack(side=LEFT)
 
     gender = IntVar()
 
-    male_checkbutton = Radiobutton(f14, text="М", value=1, variable=gender, padx=10, command=select)
-    male_checkbutton.pack(side=LEFT, pady=5)
+    male_checkbutton = Radiobutton(sec_f, text="М", value=1, variable=gender, padx=10, command=select)
+    male_checkbutton.pack(side=LEFT)
 
-    female_checkbutton = Radiobutton(f14, text="Ж", value=2, variable=gender, padx=10, command=select)
-    female_checkbutton.pack(side=LEFT, pady=5)
+    female_checkbutton = Radiobutton(sec_f, text="Ж", value=2, variable=gender, padx=10, command=select)
+    female_checkbutton.pack(side=LEFT)
 
-    label_13 = Label(f15, width=25, text='Дата рождения:')
-    label_13.pack(side=LEFT, pady=5)
+    label_13 = Label(sec_f, width=25, text='Дата рождения:')
+    label_13.pack(side=LEFT)
 
-    e_birth = Entry(f15)
-    e_birth.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+    e_birth = Entry(sec_f)
+    e_birth.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_14 = Label(f16, width=25, text='Место рождения:')
-    label_14.pack(side=LEFT, pady=5)
+    label_14 = Label(sec_f, width=25, text='Место рождения:')
+    label_14.pack(side=LEFT)
 
-    e_place_of_birth = Entry(f16)
-    e_place_of_birth.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+    e_place_of_birth = Entry(sec_f)
+    e_place_of_birth.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_10 = Label(f17, width=25, text='Должность руководителя:')
-    label_10.pack(side=LEFT, pady=5)
+    label_10 = Label(sec_f, width=25, text='Должность руководителя:')
+    label_10.pack(side=LEFT)
 
-    e_directors_job = Entry(f17)
-    e_directors_job.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+    e_directors_job = Entry(sec_f)
+    e_directors_job.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_11 = Label(f18, width=25, text='И.О.Фамилия руководителя:')
-    label_11.pack(side=LEFT, pady=5)
+    label_11 = Label(sec_f, width=25, text='И.О.Фамилия руководителя:')
+    label_11.pack(side=LEFT)
 
-    e_directors_name = Entry(f18)
-    e_directors_name.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+    e_directors_name = Entry(sec_f)
+    e_directors_name.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    label_19 = Label(f19, width=25, text='Почта:')
-    label_19.pack(side=LEFT, pady=5)
+    label_19 = Label(sec_f, width=25, text='Почта:')
+    label_19.pack(side=LEFT)
 
-    e_mail = Entry(f19)
-    e_mail.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+    e_mail = Entry(sec_f)
+    e_mail.pack(fill=X, padx=10, ipady=2, expand=True)
 
-    btn_confirm = ttk.Button(f20, text="Принять", command=confirm_data)
-    btn_confirm.pack(side=RIGHT, pady=5, padx=10)
+    btn_confirm = ttk.Button(sec_f, text="Принять", command=confirm_data)
+    btn_confirm.pack(side=RIGHT, padx=10)
 
-    btn_clear_e = ttk.Button(f20, text="Очистить", command=clear_data)
-    btn_clear_e.pack(side=LEFT, padx=5, pady=5)
+    btn_clear_e = ttk.Button(sec_f, text="Очистить", command=clear_data)
+    btn_clear_e.pack(side=LEFT, padx=5)
 
-    btn_fill_e = ttk.Button(f20, text="Заполнить", command=insert_data)
-    btn_fill_e.pack(side=LEFT, padx=5, pady=5)
+    btn_fill_e = ttk.Button(sec_f, text="Заполнить", command=insert_data)
+    btn_fill_e.pack(side=LEFT, padx=5)
 
-    btn_fill_e = ttk.Button(f20, text="Шаблон", command=open_xlsx_sample)
-    btn_fill_e.pack(side=LEFT, padx=17, pady=5)
+    btn_fill_e = ttk.Button(sec_f, text="Шаблон", command=open_xlsx_sample)
+    btn_fill_e.pack(side=LEFT, padx=17)
 
-    label12 = ttk.Label(f21, text="Статус загрузки файлов:")
-    label12.pack(side=LEFT, padx=10, pady=5)
+    label12 = ttk.Label(sec_f, text="Статус загрузки файлов:")
+    label12.pack(side=LEFT, padx=10)
 
-    label13 = ttk.Label(f21, text="Таблица с данными", foreground='red', justify=LEFT)
-    label13.pack(side=RIGHT, padx=10, pady=5)
+    label13 = ttk.Label(sec_f, text="Таблица с данными", foreground='red', justify=LEFT)
+    label13.pack(side=RIGHT, padx=10)
 
     main_menu = Menu(win)
     win.config(menu=main_menu)
+
+
 
     # Выбрать таблицу
 
@@ -712,7 +715,7 @@ def open_custom_fill():
 
 root = Tk()
 root.title('Доверенность')
-root.geometry('385x185+100+50')
+root.geometry('325x150+100+50')
 root.resizable(False, False)
 
 main_menu = Menu(root)
