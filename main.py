@@ -143,7 +143,7 @@ def open_custom_fill():
     path_xlsx = ''
 
     def check_entry():
-        if combo_city.get() and e_fio.get() and e_director.get() and e_doc.get() and \
+        if gender_data != '' and e_fio.get() and e_director.get() and e_doc.get() and \
                 e_job.get() and e_name.get() and e_seria.get() and e_number.get() and e_date.get() and \
                 e_point_of_get.get() and e_directors_job.get() and e_directors_name.get() and \
                 e_code.get() and e_birth.get() and e_place_of_birth.get() and gender.get() and e_full_fio.get() and \
