@@ -31,6 +31,8 @@ def open_sample_doc():
                                                         ("Все файлы", "*.*")))
     if path_sample != '':
         label3['foreground'] = 'green'
+    else:
+        label3['foreground'] = 'red'
 
 
 def open_table():
@@ -43,8 +45,11 @@ def open_table():
         label4['foreground'] = 'green'
         wb = openpyxl.load_workbook(path_table)
         sheet = wb.get_sheet_by_name('Доверенность')
+        e_end.delete(0, END)
         e_end.insert(0, sheet['M'][-1].coordinate)
         wb.close()
+    else:
+        label4['foreground'] = 'red'
 
 
 def get_dict():
@@ -52,7 +57,7 @@ def get_dict():
     end = e_end.get().upper()
     test = []
     wb = openpyxl.load_workbook(f'{path_table}')
-    sheet = wb.active
+    sheet = wb.get_sheet_by_name('Доверенность')
 
     rows = 0
 
@@ -62,14 +67,7 @@ def get_dict():
             for cellObj in row:
                 if cellObj.value == None or cellObj.value == '':
                     continue
-                # if len(cellObj.value) > 60:
-                #     if cellObj.value[60] == ' ':
-                #         test.append(cellObj.value[:60])
-                #         test.append(cellObj.value[60:])
-                #     else:
-                #         if cellObj.value[60] == ' ':
                 test.append(cellObj.value)
-                # print(f'Длина для {cellObj.value}: {len(cellObj.value)}')
 
         info('Обработка входных данных', "Данные из таблицы успешно загружены!\nПереходим к "
                                          "обработке шаблона.\n"
@@ -77,7 +75,7 @@ def get_dict():
         wb.close()
         return test
     except ValueError:
-        error("Обработка входных данных", "Введите корректные коордиаты!")
+        error("Обработка входных данных", "Введите корректные координаты!")
         wb.close()
     except:
         error("Обработка входных данных", "Ошибка обработки данных!")
@@ -160,6 +158,8 @@ def open_custom_fill():
                                                           ("Все файлы", "*.*")))
         if path_xlsx != '':
             label13['foreground'] = 'green'
+        else:
+            label13['foreground'] = 'red'
 
     def open_xlsx_sample():
         path = Path(user_path)
@@ -237,8 +237,7 @@ def open_custom_fill():
     gender_data = ''
 
     def insert_data():
-        clear_data()
-        # e_city.insert(0, 'Красноярск')
+        clear_for_fill()
         e_director.insert(0, 'Главного врача Филиной Натальи Григорьевны')
         e_doc.insert(0, 'Устава, утвержденного Приказом от 28.12.2021 №2586-орг')
         e_directors_job.insert(0, 'Главный врач')
@@ -326,6 +325,13 @@ def open_custom_fill():
             upd_cities = r_cities_txt()
             combo_city.config(values=upd_cities)
             combo_city.current(2)
+
+    def clear_for_fill():
+        e_director.delete(0, END)
+        e_doc.delete(0, END)
+        e_directors_job.delete(0, END)
+        e_directors_name.delete(0, END)
+        e_mail.delete(0, END)
 
     def clear_data():
         # e_city.delete(0, END)
@@ -437,13 +443,14 @@ def open_custom_fill():
         btn_add_city.pack(side=BOTTOM, padx=5)
 
     win = Toplevel()
-    win.geometry('1500x510+100+50')
+    win.geometry('1500x450+100+50')
     win.title('Внесение данных в таблицу')
     win.grab_set()
     root.withdraw()
     win.protocol("WM_DELETE_WINDOW", on_closing)
-    win.resizable(True, False)
-    win.minsize(1300, 200)
+    win.resizable(True, True)
+    win.minsize(1300, 450)
+    win.maxsize(1800, 550)
     win.config(bg="#F1EEE9")
     win.columnconfigure(index=0, minsize=550, weight=550, pad=2)
     win.columnconfigure(index=1, minsize=600, weight=550, pad=2)
@@ -487,23 +494,23 @@ def open_custom_fill():
 
     f8 = Frame(win, bg="#F1EEE9")
     # f8.pack(fill=X, padx=10, pady=5)
-    f8.grid(row=11, column=1, sticky=W + E, padx=5)
+    f8.grid(row=1, column=1, sticky=W + E, padx=5)
 
     f9 = Frame(win, bg="#F1EEE9")
     # f9.pack(fill=X, padx=10, pady=5)
-    f9.grid(row=1, column=1, sticky=W + E, padx=5)
+    f9.grid(row=2, column=1, sticky=W + E, padx=5)
 
     f10 = Frame(win, bg="#F1EEE9")
     # f10.pack(fill=X, padx=10, pady=5)
-    f10.grid(row=2, column=1, sticky=W + E, padx=5)
+    f10.grid(row=3, column=1, sticky=W + E, padx=5)
 
     f11 = Frame(win, bg="#F1EEE9")
     # f11.pack(fill=X, padx=10, pady=5)
-    f11.grid(row=3, column=1, sticky=W + E, padx=5)
+    f11.grid(row=4, column=1, sticky=W + E, padx=5)
 
     f12 = Frame(win, bg="#F1EEE9")
     # f12.pack(fill=X, padx=10, pady=5)
-    f12.grid(row=4, column=1, sticky=W + E, padx=5)
+    f12.grid(row=5, column=1, sticky=W + E, padx=5)
 
     f13 = Frame(win, bg="#F1EEE9")
     # f13.pack(fill=X, padx=10, pady=5)
@@ -535,11 +542,11 @@ def open_custom_fill():
 
     f20 = Frame(win, bg="#F1EEE9")
     # f20.pack(fill=X, padx=10, pady=5)
-    f20.grid(row=12, column=0, sticky=W + E, padx=5)
+    f20.grid(row=11, column=0, sticky=W + E, padx=5)
 
     f21 = Frame(win, bg="#F1EEE9")
     # f21.pack(fill=X, padx=10, pady=5)
-    f21.grid(row=13, column=0, sticky=W + E, padx=5)
+    f21.grid(row=12, column=0, sticky=W + E, padx=5)
 
     label_0 = Label(f0, width=25, text='Город:')
     label_0.pack(side=LEFT, pady=5)
@@ -712,7 +719,7 @@ def open_custom_fill():
 
 root = Tk()
 root.title('Доверенность')
-root.geometry('385x185+100+50')
+root.geometry('385x150+100+50')
 root.resizable(False, False)
 
 main_menu = Menu(root)
@@ -769,6 +776,7 @@ label3.pack(side=BOTTOM, padx=10)
 label4 = ttk.Label(f4, text="Таблица с данными", foreground='red', justify=LEFT)
 label4.pack(side=BOTTOM, padx=10)
 
+e_start.delete(0, END)
 e_start.insert(0, 'B2')
 
 root.mainloop()
