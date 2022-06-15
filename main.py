@@ -589,7 +589,7 @@ def open_custom_fill():
                 table.pack(expand=True, side=TOP, padx=5, fill=BOTH)
 
         sh = Toplevel()
-        sh.geometry('450x500+100+50')
+        sh.geometry('600x550+100+50')
         sh.title('Вывод значений')
         sh.grab_set()
         win.withdraw()
@@ -678,109 +678,86 @@ def open_custom_fill():
         m_menu.add_cascade(label="Таблица", menu=in_menu, )
 
     win = Toplevel()
-    win.geometry('1500x450+100+50')
+    win.geometry('1500x500+100+50')
     win.title('Внесение данных в таблицу')
     win.grab_set()
     root.withdraw()
     win.protocol("WM_DELETE_WINDOW", on_closing)
     win.resizable(True, True)
-    win.minsize(1300, 450)
-    win.maxsize(1800, 550)
+    win.minsize(1500, 500)
+    win.maxsize(1800, 500)
     win.config(bg="#F1EEE9")
     win.columnconfigure(index=0, minsize=550, weight=550, pad=2)
     win.columnconfigure(index=1, minsize=600, weight=550, pad=2)
     win.columnconfigure(index=2, weight=50, pad=1)
 
     f0 = Frame(win, bg="#F1EEE9")
-    # f0.pack(fill=X, padx=10, pady=5)
     f0.grid(row=0, column=0, sticky=W + E, padx=5)
 
     f1 = Frame(win, bg="#F1EEE9")
-    # f1.pack(fill=X, padx=10, pady=5)
     f1.grid(row=1, column=0, sticky=W + E, padx=5)
 
     f2 = Frame(win, bg="#F1EEE9")
-    # f2.pack(fill=X, padx=10, pady=5)
     f2.grid(row=2, column=0, sticky=W + E, padx=5)
 
     f3 = Frame(win, bg="#F1EEE9")
-    # f3.pack(fill=X, padx=10, pady=5)
     f3.grid(row=3, column=0, sticky=W + E, padx=5)
 
     f3_1 = Frame(win, bg="#F1EEE9")
-    # f3_1.pack(fill=X, padx=10, pady=1)
     f3_1.grid(row=6, column=0, sticky=W + E, padx=5)
 
     f4 = Frame(win, bg="#F1EEE9")
-    # f4.pack(fill=X, padx=10, pady=5)
     f4.grid(row=7, column=0, sticky=W + E, padx=5)
 
     f5 = Frame(win, bg="#F1EEE9")
-    # f5.pack(fill=X, padx=10, pady=5)
     f5.grid(row=8, column=0, sticky=W + E, padx=5)
 
     f6 = Frame(win, bg="#F1EEE9")
-    # f6.pack(fill=X, padx=10, pady=5)
     f6.grid(row=9, column=0, sticky=W + E, padx=5)
 
     f7 = Frame(win, bg="#F1EEE9")
-    # f7.pack(fill=X, padx=10, pady=5)
     f7.grid(row=10, column=0, sticky=W + E, padx=5)
 
     f8 = Frame(win, bg="#F1EEE9")
-    # f8.pack(fill=X, padx=10, pady=5)
     f8.grid(row=1, column=1, sticky=W + E, padx=5)
 
     f9 = Frame(win, bg="#F1EEE9")
-    # f9.pack(fill=X, padx=10, pady=5)
     f9.grid(row=2, column=1, sticky=W + E, padx=5)
 
     f10 = Frame(win, bg="#F1EEE9")
-    # f10.pack(fill=X, padx=10, pady=5)
     f10.grid(row=3, column=1, sticky=W + E, padx=5)
 
     f11 = Frame(win, bg="#F1EEE9")
-    # f11.pack(fill=X, padx=10, pady=5)
     f11.grid(row=4, column=1, sticky=W + E, padx=5)
 
     f12 = Frame(win, bg="#F1EEE9")
-    # f12.pack(fill=X, padx=10, pady=5)
     f12.grid(row=5, column=1, sticky=W + E, padx=5)
 
     f13 = Frame(win, bg="#F1EEE9")
-    # f13.pack(fill=X, padx=10, pady=5)
     f13.grid(row=0, column=1, sticky=W + E, padx=5)
 
     f14 = Frame(win, bg="#F1EEE9")
-    # f14.pack(fill=X, padx=10, pady=5)
     f14.grid(row=6, column=1, sticky=W + E, padx=5)
 
     f15 = Frame(win, bg="#F1EEE9")
-    # f15.pack(fill=X, padx=10, pady=5)
     f15.grid(row=7, column=1, sticky=W + E, padx=5)
 
     f16 = Frame(win, bg="#F1EEE9")
-    # f16.pack(fill=X, padx=10, pady=5)
     f16.grid(row=8, column=1, sticky=W + E, padx=5)
 
     f17 = Frame(win, bg="#F1EEE9")
-    # f17.pack(fill=X, padx=10, pady=5)
     f17.grid(row=9, column=1, sticky=W + E, padx=5)
 
     f18 = Frame(win, bg="#F1EEE9")
-    # f18.pack(fill=X, padx=10, pady=5)
     f18.grid(row=10, column=1, sticky=W + E, padx=5)
 
     f19 = Frame(win, bg="#F1EEE9")
-    # f19.pack(fill=X, padx=10, pady=5)
     f19.grid(row=11, column=1, sticky=W + E, padx=5)
 
     f20 = Frame(win, bg="#F1EEE9")
-    # f20.pack(fill=X, padx=10, pady=5)
     f20.grid(row=11, column=0, sticky=W + E, padx=5)
 
     f21 = Frame(win, bg="#F1EEE9")
-    # f21.pack(fill=X, padx=10, pady=5)
     f21.grid(row=12, column=0, sticky=W + E, padx=5)
 
     label_0 = Label(f0, width=25, text='Город:')
@@ -958,7 +935,7 @@ def open_custom_fill():
 
 root = Tk()
 root.title('Доверенность')
-root.geometry('385x150+100+50')
+root.geometry('400x165+100+50')
 root.resizable(False, False)
 
 main_menu = Menu(root)
