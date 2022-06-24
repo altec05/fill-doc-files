@@ -7,6 +7,16 @@ from pathlib import Path
 from tkinter import filedialog
 from tkinter import ttk
 import re
+from validate_email import validate_email
+from imap_tools import MailBox
+import html2text
+import imaplib
+import email
+from imbox import Imbox
+
+from email.header import decode_header
+import webbrowser
+
 import faker
 from random import randrange
 
@@ -174,6 +184,7 @@ def open_custom_fill():
         book.remove(book.active)
         sheet_1 = book.create_sheet("Доверенность")
         sheet_2 = book.create_sheet("Заявление")
+        sheet_3 = book.create_sheet("Черновики")
 
         sheet_1.insert_rows(0)
         col_names = ['№', 'Город', 'На кого', 'Руководитель', 'Основание', 'Должность', 'ФИО', 'Серия паспорта',
@@ -195,12 +206,20 @@ def open_custom_fill():
             sheet_2.column_dimensions[l[k]].width = 20
             k += 1
 
+        sheet_3.insert_rows(0)
+        col3_names = ['ФИО', 'Дата', 'Код', 'Ссылка']
+        m = 0
+        for i in col3_names:
+            sheet_3[f'{l[m]}1'].value = f'{col3_names[m]}'
+            sheet_3.column_dimensions[l[m]].width = 20
+            m += 1
+
         path = Path(user_path)
         if not path.exists():
             os.mkdir(path)
 
-        sheet_1.auto_filter.ref = "B1:M999"
-        sheet_2.auto_filter.ref = "B1:P999"
+        # sheet_1.auto_filter.ref = "B1:M999"
+        # sheet_2.auto_filter.ref = "B1:P999"
 
         book.save(f"{path}/Переменные.xlsx")
         info("Создание таблицы", 'Таблица успешно создана!')
@@ -217,9 +236,11 @@ def open_custom_fill():
                 last_row = len(list(sheet.rows))
                 first_row = 1
                 sheet.delete_rows(first_row, last_row)
+
                 last_row2 = len(list(sheet2.rows))
                 first_row2 = 1
                 sheet2.delete_rows(first_row2, last_row2)
+
                 del1 = last_row - first_row
                 del2 = last_row2 - first_row2
                 if del1 < 0:
@@ -227,8 +248,8 @@ def open_custom_fill():
                 if del2 < 0:
                     del2 = 0
                 book.save(path_xlsx)
-                info("Очистка таблицы", f'Успешно удалено строк: {del1} в листе "Доверенность" и '
-                                        f'{del2} в листе "Заявление"')
+                info("Очистка таблицы", f'Успешно удалено строк: \nВ листе "Доверенность" - {del1}\n'
+                                        f'В листе "Заявление" - {del2}')
 
 
         else:
@@ -442,6 +463,393 @@ def open_custom_fill():
 
     def out_xlsx():
         pth_xlsx = ''
+        pth_table = ''
+        login = ''
+        password = ''
+        mail_pass = ''
+        max_progress = 100
+        curent = 0
+
+        def op_table():
+            nonlocal pth_table
+            pth_table = filedialog.askopenfilename(title="Выбор таблицы для заполнения", initialdir=user_path,
+                                                   filetypes=(("Таблицы (*.xlsx)",
+                                                               "*.xlsx"),
+                                                              ("Все файлы", "*.*")))
+
+        def clear_requests():
+            if pth_table != '':
+                question = messagebox.askokcancel(title="Очистка черновиков", message="Вы уверены, что хотите очистить "
+                                                                                      "записанные черновики?\nВсе "
+                                                                                      "данные в листе будут безвозвратно "
+                                                                                      "удалены!")
+                if question:
+                    try:
+                        book = openpyxl.load_workbook(pth_table)
+                        sheet3 = book["Черновики"]
+
+                        last_row3 = len(list(sheet3.rows))
+                        first_row3 = 2
+                        sheet3.delete_rows(first_row3, last_row3)
+
+                        del3 = last_row3 - first_row3
+
+                        if del3 < 0:
+                            del3 = 0
+                        book.save(pth_table)
+                        info("Очистка таблицы", f'Успешно удалено строк:\nВ листе "Черновики: "{del3}')
+                    except:
+                        error('Ошибка', 'Лист не найден или таблица уже открыта!')
+            else:
+                error("Ошибка входных данных", "Выберите таблицу с данными!")
+
+        def get_request_from_mail():
+            def show_templs():
+                path_table_temples = ''
+
+                def show_table():
+                    # def show_temp_data(name):
+                    #     if path_table_temples == '':
+                    #         error("Таблица с данными", "Выберите таблицу для обработки!")
+                    #     else:
+                    #         wb = openpyxl.load_workbook(path_table_temples)
+                    #         sheet = wb["Заявление"]
+                    #
+                    #         start = 'B2'
+                    #         end = sheet['P'][-1].coordinate
+                    #         data = []
+                    #         try:
+                    #             for row in sheet[f'{start}':f'{end}']:
+                    #                 if (row[7].value) == name:
+                    #                     for cellObj in row:
+                    #                         data.append(cellObj.value)
+                    #                 else:
+                    #                     continue
+                    #             wb.close()
+                    #             insert_data(data)
+                    #         except:
+                    #             error("Обработка входных данных", "Ошибка обработки данных!")
+                    #             wb.close()
+
+                    def clear_e_templs():
+                        e_out_fio.delete(0, END)
+                        e_out_code.delete(0, END)
+                        e_out_url.delete(0, END)
+
+                    def ins_e_templs(record):
+                        t_fio = record[1]
+                        t_code = record[3]
+                        t_url = record[4]
+                        e_out_fio.insert(0, t_fio)
+                        e_out_code.insert(0, t_code)
+                        e_out_url.insert(0, t_url)
+
+                    def temp_selected(event):
+                        for selected_item in table.selection():
+                            item = table.item(selected_item)
+                            record = item['values']
+                            clear_e_templs()
+                            ins_e_templs(record)
+
+                    for widget in frame_4.winfo_children():
+                        widget.destroy()
+
+                    heads = ['№', 'ФИО', 'Дата', 'Код', 'Ссылка']
+                    lst = get_data_temples()
+
+                    table = ttk.Treeview(frame_4, show='headings')
+                    table['columns'] = heads
+
+                    for header in heads:
+                        table.heading(header, text=header, anchor=CENTER)
+                        table.column(header, anchor=CENTER)
+                    for row in lst:
+                        table.insert('', END, values=row)
+
+                    scroll = ttk.Scrollbar(frame_4, command=table.yview)
+                    table.configure(yscrollcommand=scroll.set)
+                    scroll.pack(side=RIGHT, fill=Y)
+
+                    table.bind('<<TreeviewSelect>>', temp_selected)
+
+                    table.pack(expand=True, side=TOP, padx=5, fill=BOTH)
+
+                def get_data_temples():
+                    if path_table_temples == '':
+                        error("Таблица с данными", "Выберите таблицу для обработки!")
+                    else:
+                        wb = openpyxl.load_workbook(path_table_temples)
+                        sheet = wb["Черновики"]
+
+                        start = 'A2'
+                        end = sheet['D'][-1].coordinate
+                        lst = []
+                        test = []
+                        rows = 0
+
+                        try:
+                            for row in sheet[f'{start}':f'{end}']:
+                                rows += 1
+                                for cellObj in row:
+                                    if cellObj.value == None or cellObj.value == '':
+                                        continue
+
+                                    test.append(str(cellObj.value))
+                            x = 0
+                            n = 1
+                            while x < len(test):
+                                lst.append((str(n), test[x], test[x + 1], test[x + 2], test[x + 3]))
+                                n += 1
+                                x += 4 # переход на новую строку
+                            wb.close()
+                            return lst
+                        except:
+                            error("Обработка входных данных", "Ошибка обработки данных!")
+                            wb.close()
+
+                def open_tab():
+                    nonlocal path_table_temples
+                    path_table_temples = filedialog.askopenfilename(title="Выбор таблицы для заполнения",
+                                                                    initialdir=user_path,
+                                                                    filetypes=(("Таблицы (*.xlsx)",
+                                                                                "*.xlsx"),
+                                                                               ("Все файлы", "*.*")))
+
+                def templs_closing():
+                    templs.destroy()
+                    mail.deiconify()
+
+                templs = Toplevel()
+                templs.geometry('550x400+100+50')
+                templs.title('Вывод значений')
+                templs.minsize(550, 400)
+                templs.grab_set()
+                mail.withdraw()
+                templs.protocol("WM_DELETE_WINDOW", templs_closing)
+                templs.resizable(True, False)
+                templs.config(bg="#F1EEE9")
+
+                frame_1 = Frame(templs, bg="#F1EEE9")
+                frame_1.pack(fill=X, padx=5)
+
+                frame_2 = Frame(templs, bg="#F1EEE9")
+                frame_2.pack(fill=X, padx=5)
+
+                frame_3 = Frame(templs, bg="#F1EEE9")
+                frame_3.pack(fill=X, padx=5)
+
+                frame_4 = Frame(templs, bg="#F1EEE9")
+                frame_4.pack(fill=BOTH, padx=5, pady=5, ipady=5, ipadx=5)
+
+                labe_1 = ttk.Label(frame_1, text="Для вывода данных выберите субъекта в таблице!")
+                labe_1.pack(side=LEFT, padx=5)
+
+                e_out_fio = ttk.Entry(frame_2)
+                e_out_fio.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+
+                e_out_code = ttk.Entry(frame_2)
+                e_out_code.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+
+                e_out_url = ttk.Entry(frame_2)
+                e_out_url.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+
+                btn_show_data = ttk.Button(frame_3, text="Показать таблицу", command=show_table)
+                btn_show_data.pack(side=LEFT, padx=5, ipadx=2)
+
+                m_menu = Menu(templs)
+                templs.config(menu=m_menu)
+
+                # Выбрать таблицу
+                in_menu = Menu(m_menu, tearoff=0)
+                in_menu.add_command(label="Указать таблицу c данными", command=open_tab)
+                m_menu.add_cascade(label="Таблица", menu=in_menu, )
+
+
+            def mail_closing():
+                mail.destroy()
+                sh.deiconify()
+
+            def check_email():
+                check = e_login.get()
+                is_valid = validate_email(check, verify=True)
+                if is_valid:
+                    return True
+                else:
+                    return False
+
+            def get_pass_code():
+                if e_login.get():
+                    if e_login.get() == 'ikdomashenko@kkck.ru':
+                        return True
+                else:
+                    error('Ошибка', 'Введите данные для авторизации!')
+                    return False
+
+            def update_table(send):
+                def insert_templates(send):
+                    if pth_table == '':
+                        error("Ошибка входных данных", "Укажите таблицу данных!")
+                    else:
+                        wb = openpyxl.load_workbook(pth_table)
+                        sheet = wb["Черновики"]
+                        data = send
+                        nb_row = sheet.max_row
+                        if nb_row == 1:
+                            for row in data:
+                                sheet.append(row)
+                        else:
+                            for row in data:
+                                start_name = 'B2'
+                                end_name = sheet['B'][-1].coordinate
+                                for item in sheet[f'{start_name}':f'{end_name}']:
+                                    sheet.append(row)
+                        wb.save(pth_table)
+                        info('Обработка данных', f'Файл успешно сохранен! Добавлено строк: {len(data)}')
+
+                insert_templates(send)
+
+            def get_login_data():
+                nonlocal login, password, mail_pass, curent
+
+                curent = 0
+                labe2['text'] = f"Обработано строк: {curent}"
+                progress_bar['value'] = 0
+                frame4.update()
+
+                send = list()
+                if pth_table == '':
+                    error("Ошибка входных данных", "Укажите таблицу данных!")
+                else:
+                    if check_email:
+                        if get_pass_code():
+                            login = e_login.get()
+                            password = e_pass.get()
+                            if password.find('Укажите код') == -1:
+                                if password != '':
+                                    mail_pass = password
+                                    print(mail_pass)
+                            else:
+                                mail_pass = ''
+                                print(mail_pass)
+
+                            print(mail_pass)
+                            messagebox.showwarning(title='Предупреждение', message='Внимание!\nПрограмма может не '
+                                                                                   'отвечать после начала операции '
+                                                                                   'из-за подключения к почтовому '
+                                                                                   'серверу.\n\nПожалуйста, '
+                                                                                   'дождитесь уведомления о '
+                                                                                   'завершении процесса!\nВремя '
+                                                                                   'выполнения зависит от ресурсов '
+                                                                                   'вашего компьютера (~1 min.)')
+                            with MailBox('imap.yandex.ru').login(login, mail_pass) as mailbox:
+                                nonlocal max_progress
+                                for msg in mailbox.fetch(limit=500, bulk=True, reverse=True):
+                                    if msg.from_ == 'uc_fk@roskazna.ru':
+                                        if msg.subject == 'Создан черновик запроса на сертификат':
+                                            from_ = msg.from_
+                                            subject = msg.subject
+                                            date = msg.date
+                                            body = msg.text or msg.html
+                                            text = html2text.html2text(body)
+                                            res = text.replace('\n', '')
+                                            index_code = res.find('Номер запроса: ') + 15
+                                            index_fio = res.find('ФИО: ') + 5
+                                            index_fio_end = res.find('  Черновик запроса будет доступен по ссылке до')
+                                            index_url = res.find('[ссылка]') + 9
+                                            index_url_end = res.find(').  **Сведения запроса')
+
+                                            wb = openpyxl.load_workbook(pth_table)
+                                            sheet = wb["Черновики"]
+
+                                            for row in sheet.values:
+                                                if res[index_fio:index_fio_end] == row[0]:
+                                                    continue
+                                                else:
+                                                    temp = [res[index_fio:index_fio_end],
+                                                            date.strftime('%d.%m.%Y'),
+                                                            res[index_code:index_code + 6],
+                                                            res[index_url:index_url_end]]
+                                                    send.append(temp)
+                                                    labe2['text'] = f"Обработано строк: {curent}"
+                                                    progress_bar['value'] += 1
+                                                    curent += 1
+                                                    frame4.update()
+                                            wb.close()
+                                        else:
+                                            continue
+                                    else:
+                                        continue
+                                curent = max_progress
+                                progress_bar['value'] = curent
+                                frame4.update()
+                                info('Обработка почты', 'Обработка завершена, переходим к записи данных в таблицу!')
+                                update_table(send)
+                        else:
+                            error('Ошибка', 'Некорректные данные для авторизации!')
+                    else:
+                        messagebox.showerror(title="Проверка почты", message="Почта не существует!")
+
+            mail = Toplevel()
+            mail.geometry('500x200+100+50')
+            mail.title('Получение черновиков')
+            mail.grab_set()
+            sh.withdraw()
+            mail.protocol("WM_DELETE_WINDOW", mail_closing)
+            mail.resizable(False, False)
+            mail.config(bg="#F1EEE9")
+
+            frame1 = Frame(mail, bg="#F1EEE9")
+            frame1.pack(fill=X, padx=5)
+
+            frame2 = Frame(mail, bg="#F1EEE9")
+            frame2.pack(fill=X, padx=5)
+
+            frame3 = Frame(mail, bg="#F1EEE9")
+            frame3.pack(fill=X, padx=5)
+
+            frame4 = Frame(mail, bg="#F1EEE9")
+            frame4.pack(fill=X, padx=5, pady=10)
+
+            frame5 = Frame(mail, bg="#F1EEE9")
+            frame5.pack(fill=X, padx=5)
+
+            frame6 = Frame(mail, bg="#F1EEE9")
+            frame6.pack(fill=X, padx=5)
+
+            labe1 = ttk.Label(frame1, text="Укажите почту: ")
+            labe1.pack(side=LEFT, padx=5)
+
+            e_login = ttk.Entry(frame2)
+            e_login.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+
+            e_pass = ttk.Entry(frame3)
+            e_pass.pack(fill=X, padx=10, ipady=2, expand=True, pady=5)
+            e_pass.insert(0, 'Укажите код для доступа к приложению, если нужна другая почта')
+
+            labe2 = ttk.Label(frame4, text=f"Обработано строк: {curent} ")
+            labe2.pack(side=LEFT, padx=5)
+
+            progress_bar = ttk.Progressbar(frame4, orient="horizontal", mode="determinate",
+                                           maximum=max_progress, value=0)
+            progress_bar.pack(side=LEFT, fill=X, padx=10, ipady=2, expand=True, pady=5)
+
+            btn_send = ttk.Button(frame6, text="Получить запросы", command=get_login_data)
+            btn_send.pack(side=LEFT, padx=5)
+
+            btn_show_templs = ttk.Button(frame6, text="Показать черновики", command=show_templs)
+            btn_show_templs.pack(side=LEFT, padx=5)
+
+            btn_temp = ttk.Button(frame6, text="Шаблоны", command=open_xlsx_sample)
+            btn_temp.pack(side=RIGHT, padx=5)
+
+            req_menu = Menu(sh)
+            mail.config(menu=req_menu)
+
+            # Выбрать таблицу
+            tab_menu = Menu(req_menu, tearoff=0)
+            tab_menu.add_command(label="Указать таблицу c данными", command=op_table)
+            tab_menu.add_command(label="Очистить черновики", command=clear_requests)
+            req_menu.add_cascade(label="Таблица", menu=tab_menu, )
 
         def open_xlsx_sh():
             nonlocal pth_xlsx
@@ -518,7 +926,7 @@ def open_custom_fill():
                     show_data(record[2])
 
             def insert_data(data):
-                clear_eout() # очищаем поля
+                clear_eout()  # очищаем поля
 
                 eout_seria.insert(0, data[0])
                 eout_numb.insert(0, data[1])
@@ -589,7 +997,7 @@ def open_custom_fill():
                 table.pack(expand=True, side=TOP, padx=5, fill=BOTH)
 
         sh = Toplevel()
-        sh.geometry('600x550+100+50')
+        sh.geometry('450x500+100+50')
         sh.title('Вывод значений')
         sh.grab_set()
         win.withdraw()
@@ -677,15 +1085,20 @@ def open_custom_fill():
         in_menu.add_command(label="Указать таблицу c данными", command=open_xlsx_sh)
         m_menu.add_cascade(label="Таблица", menu=in_menu, )
 
+        # Запросы с почты
+        mail_menu = Menu(m_menu, tearoff=0)
+        mail_menu.add_command(label="Получить запросы с почты", command=get_request_from_mail)
+        m_menu.add_cascade(label="Запросы", menu=mail_menu, )
+
     win = Toplevel()
-    win.geometry('1500x500+100+50')
+    win.geometry('1500x450+100+50')
     win.title('Внесение данных в таблицу')
     win.grab_set()
     root.withdraw()
     win.protocol("WM_DELETE_WINDOW", on_closing)
     win.resizable(True, True)
-    win.minsize(1500, 500)
-    win.maxsize(1800, 500)
+    win.minsize(1300, 450)
+    win.maxsize(1800, 550)
     win.config(bg="#F1EEE9")
     win.columnconfigure(index=0, minsize=550, weight=550, pad=2)
     win.columnconfigure(index=1, minsize=600, weight=550, pad=2)
@@ -935,7 +1348,7 @@ def open_custom_fill():
 
 root = Tk()
 root.title('Доверенность')
-root.geometry('400x165+100+50')
+root.geometry('385x150+100+50')
 root.resizable(False, False)
 
 main_menu = Menu(root)
@@ -949,7 +1362,7 @@ main_menu.add_cascade(label="Шаблон", menu=file_menu, )
 
 # Рцчной ввод данных
 fill_menu = Menu(main_menu, tearoff=0)
-fill_menu.add_command(label="Заполнить вручную", command=open_custom_fill)
+fill_menu.add_command(label="Редактирование и вывод", command=open_custom_fill)
 main_menu.add_cascade(label="Данные", menu=fill_menu, )
 
 f1 = Frame(root)
